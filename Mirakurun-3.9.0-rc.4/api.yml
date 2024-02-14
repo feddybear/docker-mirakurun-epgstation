@@ -1,0 +1,668 @@
+swagger: '2.0'
+info:
+  title: Mirakurun
+  version: ~
+  description: DVR Tuner Server for Japanese TV.
+  contact:
+    name: Chinachu Project
+    url: https://chinachu.moe/
+basePath: /api
+consumes:
+  - application/json
+produces:
+  - application/json
+paths: {}
+
+definitions:
+
+  # common --------------------------------------------------------------------
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+      reason:
+        type: string
+      errors:
+        type: array
+        items:
+          $ref: '#/definitions/ErrorOfOpenAPI'
+
+  ErrorOfOpenAPI:
+    type: object
+    properties:
+      errorCode:
+        type: string
+      message:
+        type: string
+      location:
+        type: string
+
+  ProgramId:
+    type: integer
+    maximum: 655356553565535
+
+  EventId:
+    type: integer
+    maximum: 65535
+
+  ServiceId:
+    type: integer
+    maximum: 65535
+
+  NetworkId:
+    type: integer
+    maximum: 65535
+
+  ServiceItemId:
+    type: integer
+    maximum: 6553565535
+
+  UnixtimeMS:
+    type: integer
+
+  # channel -------------------------------------------------------------------
+
+  Channel:
+    type: object
+    required:
+      - type
+      - channel
+    properties:
+      type:
+        $ref: '#/definitions/ChannelType'
+      channel:
+        type: string
+      name:
+        type: string
+      satellite:
+        type: string
+      space:
+        type: integer
+      freq:
+        type: number
+      polarity:
+        type: string
+        enum:
+          - H
+          - V
+      tsmfRelTs:
+        type: integer
+      services:
+        type: array
+        items:
+          $ref: '#/definitions/Service'
+
+  ChannelType:
+    type: string
+    enum:
+      - GR
+      - BS
+      - CS
+      - SKY
+
+  # service -------------------------------------------------------------------
+
+  Service:
+    type: object
+    required:
+      - id
+      - serviceId
+      - networkId
+      - name
+      - type
+    properties:
+      id:
+        $ref: '#/definitions/ServiceItemId'
+      serviceId:
+        $ref: '#/definitions/ServiceId'
+      networkId:
+        $ref: '#/definitions/NetworkId'
+      name:
+        type: string
+      type:
+        type: integer
+      logoId:
+        type: integer
+      hasLogoData:
+        type: boolean
+      remoteControlKeyId:
+        type: integer
+      epgReady:
+        type: boolean
+      epgUpdatedAt:
+        $ref: '#/definitions/UnixtimeMS'
+      channel:
+        $ref: '#/definitions/Channel'
+
+  # program -------------------------------------------------------------------
+
+  Program:
+    type: object
+    required:
+      - id
+      - eventId
+      - serviceId
+      - networkId
+      - startAt
+      - duration
+      - isFree
+    properties:
+      id:
+        $ref: '#/definitions/ProgramId'
+      eventId:
+        $ref: '#/definitions/EventId'
+      serviceId:
+        $ref: '#/definitions/ServiceId'
+      networkId:
+        $ref: '#/definitions/NetworkId'
+      startAt:
+        $ref: '#/definitions/UnixtimeMS'
+      duration:
+        type: integer
+      isFree:
+        type: boolean
+      name:
+        type: string
+      description:
+        type: string
+      genres:
+        type: array
+        items:
+          $ref: '#/definitions/ProgramGenre'
+      #attributes:
+      #  type: array
+      #  items:
+      #    type: string
+      video:
+        type: object
+        properties:
+          type:
+            $ref: '#/definitions/ProgramVideoType'
+          resolution:
+            $ref: '#/definitions/ProgramVideoResolution'
+          streamContent:
+            type: integer
+          componentType:
+            type: integer
+      audios:
+        type: array
+        items:
+          type: object
+          properties:
+            componentType:
+              type: integer
+            componentTag:
+              type: integer
+            isMain:
+              type: boolean
+            samplingRate:
+              $ref: '#/definitions/ProgramAudioSamplingRate'
+            langs:
+              type: array
+              items:
+                type: string
+                enum:
+                  - jpn
+                  - eng
+                  - deu
+                  - fra
+                  - ita
+                  - rus
+                  - zho
+                  - kor
+                  - spa
+                  - etc
+      extended:
+        type: object
+      relatedItems:
+        type: array
+        items:
+          $ref: '#/definitions/RelatedItem'
+      series:
+        type: object
+        properties:
+          id:
+            type: integer
+          repeat:
+            type: integer
+            minimum: 0
+          pattern:
+            $ref: '#/definitions/ProgramPattern'
+          expiresAt:
+            $ref: '#/definitions/UnixtimeMS'
+          episode:
+            $ref: '#/definitions/ProgramEpisodeNumber'
+          lastEpisode:
+            $ref: '#/definitions/ProgramEpisodeNumber'
+          name:
+            type: string
+
+  ProgramGenre:
+    type: object
+    properties:
+      lv1:
+        type: integer
+      lv2:
+        type: integer
+      un1:
+        type: integer
+      un2:
+        type: integer
+
+  ProgramVideoType:
+    type: string
+    enum:
+      - mpeg2
+      - h.264
+      - h.265
+
+  ProgramVideoResolution:
+    type: string
+    enum:
+      - 240p
+      - 480i
+      - 480p
+      - 720p
+      - 1080i
+      - 1080p
+      - 2160p
+      - 4320p
+
+  ProgramAudioSamplingRate:
+    type: integer
+    enum:
+      - 16000 # 001
+      - 22050 # 010
+      - 24000 # 011
+      - 32000 # 101
+      - 44100 # 110
+      - 48000 # 111
+
+  ProgramPattern:
+    type: integer
+    minimum: 0
+    maximum: 7
+    # ARIB STD-B10 Vol.2
+    # 0x0 不定期（0x1 – 0x7で定義されるもの以外）
+    # 0x1 帯番組（毎日、平日のみ毎日、土・日のみなど）、週に複数回の編成
+    # 0x2 週に1回程度の編成
+    # 0x3 月に1回程度の編成
+    # 0x4 同日内に複数話数の編成
+    # 0x5 長時間番組の分割
+    # 0x6 定期または不定期の蓄積用の編成
+    # 0x7 未定義
+
+  ProgramEpisodeNumber:
+    type: integer
+    minimum: 1
+    maximum: 4095
+
+  RelatedItem:
+    type: object
+    properties:
+      type:
+        type: string
+        enum:
+          - shared
+          - relay
+          - movement
+      networkId:
+        type: integer
+      serviceId:
+        type: integer
+      eventId:
+        type: integer
+
+  # tuner ---------------------------------------------------------------------
+
+  TunerDevice:
+    type: object
+    required:
+      - index
+      - name
+      - types
+      - command
+      - pid
+      - users
+      - isAvailable
+      - isFree
+      - isUsing
+      - isFault
+    properties:
+      index:
+        type: integer
+      name:
+        type: string
+      types:
+        type: array
+        items:
+          $ref: '#/definitions/ChannelType'
+      command:
+        type: string
+      pid:
+        type: integer
+      users:
+        type: array
+        items:
+          $ref: '#/definitions/TunerUser'
+      isAvailable:
+        type: boolean
+      isRemote:
+        type: boolean
+      isFree:
+        type: boolean
+      isUsing:
+        type: boolean
+      isFault:
+        type: boolean
+
+  TunerUser:
+    type: object
+    required:
+      - id
+      - priority
+    properties:
+      id:
+        type: string
+      priority:
+        type: integer
+        minimum: -1
+      agent:
+        type: string
+      url:
+        type: string
+      disableDecoder:
+        type: boolean
+      streamSetting:
+        type: object
+        required:
+          - channel
+        properties:
+          channel:
+            $ref: '#/definitions/ConfigChannelsItem'
+          networkId:
+            type: integer
+          serviceId:
+            type: integer
+          eventId:
+            type: integer
+          noProvide:
+            type: boolean
+          parseNIT:
+            type: boolean
+          parseSDT:
+            type: boolean
+          parseEIT:
+            type: boolean
+      streamInfo:
+        type: object
+        additionalProperties:
+          type: object
+          required:
+            - packet
+            - drop
+          properties:
+            packet:
+              type: integer
+            drop:
+              type: integer
+
+  TunerProcess:
+    type: object
+    required:
+      - pid
+    properties:
+      pid:
+        type: integer
+
+  # event ---------------------------------------------------------------------
+
+  Event:
+    type: object
+    required:
+      - resource
+      - type
+      - data
+      - time
+    properties:
+      resource:
+        $ref: '#/definitions/EventResource'
+      type:
+        $ref: '#/definitions/EventType'
+      data:
+        type: object
+      time:
+        $ref: '#/definitions/UnixtimeMS'
+
+  EventResource:
+    type: string
+    enum:
+      - program
+      - service
+      - tuner
+
+  EventType:
+    type: string
+    enum:
+      - create
+      - update
+      - remove
+
+  # config --------------------------------------------------------------------
+
+  ConfigServer:
+    type: object
+    properties:
+      path:
+        type: string
+      port:
+        type: integer
+        minimum: 1
+        maximum: 65535
+      hostname:
+        type: string
+      disableIPv6:
+        type: boolean
+      logLevel:
+        type: integer
+        minimum: -1
+        maximum: 3
+      maxLogHistory:
+        type: integer
+        minimum: 0
+      maxBufferBytesBeforeReady:
+        type: integer
+      eventEndTimeout:
+        type: integer
+        minimum: 0
+      programGCInterval:
+        type: integer
+      epgGatheringInterval:
+        type: integer
+      epgRetrievalTime:
+        type: integer
+      logoDataInterval:
+        type: integer
+      disableEITParsing:
+        type: boolean
+      disableWebUI:
+        type: boolean
+      allowIPv4CidrRanges:
+        type: array
+        items:
+          type: string
+      allowIPv6CidrRanges:
+        type: array
+        items:
+          type: string
+
+  ConfigTuners:
+    type: array
+    items:
+      $ref: '#/definitions/ConfigTunersItem'
+
+  ConfigTunersItem:
+    type: object
+    required:
+      - name
+      - types
+    properties:
+      name:
+        type: string
+      types:
+        type: array
+        items:
+          $ref: '#/definitions/ChannelType'
+      command:
+        type: string
+      dvbDevicePath:
+        type: string
+      remoteMirakurunHost:
+        type: string
+      remoteMirakurunPort:
+        type: integer
+      remoteMirakurunDecoder:
+        type: boolean
+      decoder:
+        type: string
+      isDisabled:
+        type: boolean
+
+  ConfigChannels:
+    type: array
+    items:
+      $ref: '#/definitions/ConfigChannelsItem'
+
+  ConfigChannelsItem:
+    type: object
+    required:
+      - name
+      - type
+      - channel
+    properties:
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/ChannelType'
+      channel:
+        type: string
+      serviceId:
+        $ref: '#/definitions/ServiceId'
+      satellite:
+        type: string
+      space:
+        type: integer
+      freq:
+        type: number
+      polarity:
+        type: string
+        enum:
+          - H
+          - V
+      isDisabled:
+        type: boolean
+
+  Version:
+    type: object
+    properties:
+      current:
+        type: string
+      latest:
+        type: string
+
+  Status:
+    type: object
+    properties:
+      time:
+        type: integer
+      version:
+        type: string
+      process:
+        type: object
+        properties:
+          arch:
+            type: string
+          platform:
+            type: string
+          versions:
+            type: object
+          env:
+            type: object
+          pid:
+            type: integer
+          memoryUsage:
+            type: object
+            properties:
+              rss:
+                type: integer
+              heapTotal:
+                type: integer
+              heapUsed:
+                type: integer
+      epg:
+        type: object
+        properties:
+          gatheringNetworks:
+            type: array
+            items:
+              $ref: '#/definitions/NetworkId'
+          storedEvents:
+            type: integer
+      rpcCount:
+        type: integer
+      streamCount:
+        type: object
+        properties:
+          tunerDevice:
+            type: integer
+          tsFilter:
+            type: integer
+          decoder:
+            type: integer
+      errorCount:
+        type: object
+        properties:
+          uncaughtException:
+            type: integer
+          unhandledRejection:
+            type: integer
+          bufferOverflow:
+            type: integer
+          tunerDeviceRespawn:
+            type: integer
+          decoderRespawn:
+            type: integer
+      timerAccuracy:
+        type: object
+        properties:
+          last:
+            type: number
+          m1:
+            type: object
+            properties:
+              avg:
+                type: number
+              min:
+                type: number
+              max:
+                type: number
+          m5:
+            type: object
+            properties:
+              avg:
+                type: number
+              min:
+                type: number
+              max:
+                type: number
+          m15:
+            type: object
+            properties:
+              avg:
+                type: number
+              min:
+                type: number
+              max:
+                type: number

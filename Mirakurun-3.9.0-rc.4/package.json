@@ -1,0 +1,133 @@
+{
+  "name": "mirakurun",
+  "preferGlobal": true,
+  "description": "DVR Tuner Server for Japanese TV.",
+  "version": "3.9.0-rc.4",
+  "homepage": "https://github.com/Chinachu/Mirakurun",
+  "keywords": [
+    "mirakurun",
+    "chinachu",
+    "rivarun",
+    "arib",
+    "isdb",
+    "dvb",
+    "dvr",
+    "dtv",
+    "tv"
+  ],
+  "author": {
+    "name": "kanreisa",
+    "url": "https://github.com/kanreisa"
+  },
+  "contributors": [
+    "rndomhack"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Chinachu/Mirakurun.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Chinachu/Mirakurun/issues"
+  },
+  "license": "Apache-2.0",
+  "bin": {
+    "mirakurun": "bin/cli.sh",
+    "mirakurun-epgdump": "bin/epgdump.js"
+  },
+  "main": "lib/client.js",
+  "scripts": {
+    "start": "node -r source-map-support/register lib/server.js",
+    "debug": "node -r source-map-support/register --inspect=0.0.0.0:9229 lib/server.js",
+    "start.win32": "node.exe -r source-map-support/register bin/init.win32.js",
+    "debug.win32": "node.exe -r source-map-support/register --inspect bin/init.win32.js",
+    "build": "npm run build:server && npm run build:webpack",
+    "build:server": "tslint --project . && tsc --declaration",
+    "build:webpack": "webpack",
+    "watch": "concurrently -n w: npm:watch:*",
+    "watch:server": "tsc -w --declaration",
+    "watch:webpack": "webpack -w",
+    "test": "tslint --project . && mocha --exit test/*.spec.js",
+    "clean": "rimraf lib/*",
+    "prepublishOnly": "npm run clean && npm run build",
+    "preinstall": "node bin/preinstall.js",
+    "postinstall": "node bin/postinstall.js",
+    "preuninstall": "node bin/preuninstall.js",
+    "docker:build": "docker compose -f docker/docker-compose.yml build",
+    "docker:run": "docker compose -f docker/docker-compose.yml run --rm --service-ports mirakurun",
+    "docker:up": "docker compose -f docker/docker-compose.yml up -d",
+    "docker:debug": "docker compose -f docker/docker-compose.yml run --rm --service-ports -e DEBUG=true mirakurun"
+  },
+  "directories": {
+    "doc": "doc",
+    "lib": "lib"
+  },
+  "dependencies": {
+    "@chinachu/aribts": "1.3.5-mirakurun.18",
+    "cors": "2.8.5",
+    "dotenv": "8.6.0",
+    "eventemitter3": "4.0.7",
+    "express": "4.17.3",
+    "express-openapi": "8.0.0",
+    "glob": "7.2.3",
+    "ip-num": "1.3.4",
+    "js-yaml": "4.1.0",
+    "jsonrpc2-ws": "1.0.0-beta23",
+    "mime": "3.0.0",
+    "morgan": "1.10.0",
+    "openapi-types": "7.2.3",
+    "promise-queue": "2.2.5",
+    "rfdc": "1.3.0",
+    "semver": "7.3.5",
+    "sift": "15.1.3",
+    "source-map-support": "0.5.21",
+    "swagger-ui-dist": "4.6.1",
+    "tail": "2.2.4"
+  },
+  "devDependencies": {
+    "@fluentui/react": "8.49.6",
+    "@types/cors": "^2.8.12",
+    "@types/express": "^4.17.13",
+    "@types/js-yaml": "^4.0.2",
+    "@types/morgan": "^1.9.3",
+    "@types/node": "14.17",
+    "@types/promise-queue": "^2.2.0",
+    "@types/react": "^17.0.39",
+    "@types/react-dom": "17.0.13",
+    "@types/swagger-ui-dist": "^3.30.1",
+    "@types/ws": "^7.4.7",
+    "buffer": "^6.0.3",
+    "concurrently": "^7.0.0",
+    "copy-webpack-plugin": "^9.0.1",
+    "css-loader": "5.2.7",
+    "mocha": "^9.2.2",
+    "process": "^0.11.10",
+    "react": "17.0.2",
+    "react-dom": "17.0.2",
+    "rimraf": "^3.0.2",
+    "style-loader": "^2.0.0",
+    "ts-loader": "9.2.7",
+    "tslint": "^6.1.3",
+    "tslint-config-prettier": "^1.18.0",
+    "typescript": "4.7",
+    "url": "^0.11.0",
+    "webpack": "^5.77.0",
+    "webpack-cli": "^4.9.2"
+  },
+  "engines": {
+    "node": "^14.17.0 || ^16 || ^18"
+  },
+  "engineStrict": true,
+  "os": [
+    "linux",
+    "darwin",
+    "win32"
+  ],
+  "funding": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/Mirakurun"
+  },
+  "collective": {
+    "type": "opencollective",
+    "url": "https://opencollective.com/Mirakurun"
+  }
+}
